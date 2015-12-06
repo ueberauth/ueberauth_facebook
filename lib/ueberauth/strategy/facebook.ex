@@ -88,7 +88,6 @@ defmodule Ueberauth.Strategy.Facebook do
       image: fetch_image(user["id"]),
       last_name: user["last_name"],
       name: user["name"],
-      nickname: nil,
       urls: %{
         facebook: user["link"],
         website: user["website"]
