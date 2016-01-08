@@ -14,7 +14,7 @@ defmodule Ueberauth.Strategy.Facebook do
   """
   def handle_request!(conn) do
     scopes = conn.params["scope"] || option(conn, :default_scope)
-    opts = [ scope: scopes ]
+    opts = [ scope: scopes, auth_type: "rerequest" ]
     if conn.params["state"], do: opts = Keyword.put(opts, :state, conn.params["state"])
     opts = Keyword.put(opts, :redirect_uri, callback_url(conn))
     IO.inspect opts
