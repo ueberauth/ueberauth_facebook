@@ -23,7 +23,6 @@ defmodule Ueberauth.Strategy.Facebook do
     end
 
     opts = Keyword.put(opts, :redirect_uri, callback_url(conn))
-    IO.inspect opts
     redirect!(conn, Ueberauth.Strategy.Facebook.OAuth.authorize_url!(opts))
   end
 
