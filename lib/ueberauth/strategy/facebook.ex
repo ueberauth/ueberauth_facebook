@@ -3,9 +3,10 @@ defmodule Ueberauth.Strategy.Facebook do
   Facebook Strategy for Überauth.
   """
 
-  use Ueberauth.Strategy, uid_field: :id,
+  use Ueberauth.Strategy, auth_type: "",
                           default_scope: "email",
-                          profile_fields: ""
+                          profile_fields: "",
+                          uid_field: :id
 
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
@@ -15,8 +16,10 @@ defmodule Ueberauth.Strategy.Facebook do
   Handles initial request for Facebook authentication.
   """
   def handle_request!(conn) do
-    scopes = conn.params["scope"] || option(conn, :default_scope)
-    opts = [ scope: scopes ]
+    auth_type = option(conn.params["auth_type"], conn, :auth_type)
+    scopes = option(conn.params["scope"], conn, :default_scope)
+
+    opts = [auth_type: auth_type, scope: scopes]
 
     if conn.params["state"] do
       opts = Keyword.put(opts, :state, conn.params["state"])
@@ -135,6 +138,12 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp option(conn, key) do
-    Dict.get(options(conn), key, Dict.get(default_options, key))
+    default = Dict.get(default_options, key)
+
+    conn
+    |> options
+    |> Dict.get(key, default)
   end
+  defp option(nil, conn, key), do: option(conn, key)
+  defp option(value, _conn, _key), do: value
 end
