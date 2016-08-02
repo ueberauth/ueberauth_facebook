@@ -11,7 +11,7 @@ defmodule Ueberauth.Strategy.Facebook do
                             :scope,
                             :locale,
                             :state,
-                            :display  # page (default), async, iframe, popup, touch, wap
+                            :display
                           ]
 
 
