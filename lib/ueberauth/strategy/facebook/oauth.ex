@@ -14,7 +14,7 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
     strategy: __MODULE__,
     site: "https://graph.facebook.com",
     authorize_url: "https://www.facebook.com/dialog/oauth",
-    token_url: "/oauth/access_token",
+    token_url: "/v2.8/oauth/access_token",
     token_method: :get
   ]
 
