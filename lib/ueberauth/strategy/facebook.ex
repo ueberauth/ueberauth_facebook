@@ -46,10 +46,11 @@ defmodule Ueberauth.Strategy.Facebook do
   def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
     opts = [redirect_uri: callback_url(conn)]
     client = Ueberauth.Strategy.Facebook.OAuth.get_token!([code: code], opts)
+    token = client.token
 
-    if client.access_token == nil do
-      err = client.other_params["error"]
-      desc = client.other_params["error_description"]
+    if token.access_token == nil do
+      err = token.other_params["error"]
+      desc = token.other_params["error_description"]
       set_errors!(conn, [error(err, desc)])
     else
       fetch_user(conn, client)
@@ -135,7 +136,7 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp fetch_user(conn, client) do
-    conn = put_private(conn, :facebook_token, client)
+    conn = put_private(conn, :facebook_token, client.token)
     query = user_query(conn)
     path = "/me?#{query}"
     case OAuth2.Client.get(client, path) do
