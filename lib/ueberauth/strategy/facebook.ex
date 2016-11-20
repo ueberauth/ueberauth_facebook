@@ -151,8 +151,8 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp user_query(conn) do
-    conn
-    |> query_params(:locale)
+    %{}
+    |> Map.merge(query_params(conn, :locale))
     |> Map.merge(query_params(conn, :profile))
     |> URI.encode_query
   end
