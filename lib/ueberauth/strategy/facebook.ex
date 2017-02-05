@@ -113,6 +113,7 @@ defmodule Ueberauth.Strategy.Facebook do
       last_name: user["last_name"],
       name: user["name"],
       urls: %{
+        fb_id: user["id"]
         facebook: user["link"],
         website: user["website"]
       }
