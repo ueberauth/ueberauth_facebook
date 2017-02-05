@@ -103,12 +103,13 @@ defmodule Ueberauth.Strategy.Facebook do
   """
   def info(conn) do
     user = conn.private.facebook_user
+    image_type = option(conn, :image_type)
 
     %Info{
       description: user["bio"],
       email: user["email"],
       first_name: user["first_name"],
-      image: fetch_image(user["id"]),
+      image: get_image(user, image_type),
       last_name: user["last_name"],
       name: user["name"],
       urls: %{
@@ -131,13 +132,18 @@ defmodule Ueberauth.Strategy.Facebook do
     }
   end
 
-  defp fetch_image(uid) do
-    "http://graph.facebook.com/#{uid}/picture?type=square"
+  defp get_image(%{ "picture" => %{ "data" => %{"url" => url}}}, _), do: url
+  defp get_image(user, image_type), do: fetch_image(user["id"],image_type)
+
+  defp fetch_image(uid, nil), do: fetch_image(uid, "square")
+
+  defp fetch_image(uid, type) do
+    "http://graph.facebook.com/#{uid}/picture?type=#{type}"
   end
 
   defp fetch_user(conn, client) do
     conn = put_private(conn, :facebook_token, client.token)
-    query = user_query(conn, client.token)
+    query = user_query(conn)
     path = "/me?#{query}"
     case OAuth2.Client.get(client, path) do
       {:ok, %OAuth2.Response{status_code: 401, body: _body}} ->
@@ -150,24 +156,11 @@ defmodule Ueberauth.Strategy.Facebook do
     end
   end
 
-  defp user_query(conn, token) do
-    %{"appsecret_proof" => appsecret_proof(token)}
-    |> Map.merge(query_params(conn, :locale))
+  defp user_query(conn) do
+    conn
+    |> query_params(:locale)
     |> Map.merge(query_params(conn, :profile))
     |> URI.encode_query
-  end
-
-  defp appsecret_proof(token) do
-    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
-    client_secret = Keyword.get(config, :client_secret)
-
-    token.access_token
-    |> hmac(:sha256, client_secret)
-    |> Base.encode16(case: :lower)
-  end
-
-  defp hmac(data, type, key) do
-    :crypto.hmac(type, key, data)
   end
 
   defp query_params(conn, :profile) do
@@ -181,11 +174,11 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp option(conn, key) do
-    default = Keyword.get(default_options(), key)
+    default = Dict.get(default_options, key)
 
     conn
     |> options
-    |> Keyword.get(key, default)
+    |> Dict.get(key, default)
   end
   defp option(nil, conn, key), do: option(conn, key)
   defp option(value, _conn, _key), do: value
