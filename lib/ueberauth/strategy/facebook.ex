@@ -14,10 +14,7 @@ defmodule Ueberauth.Strategy.Facebook do
                             :display
                           ]
 
-
-  alias Ueberauth.Auth.Info
-  alias Ueberauth.Auth.Credentials
-  alias Ueberauth.Auth.Extra
+  alias Ueberauth.Auth.{Info, Credentials, Extra}
 
   @doc """
   Handles initial request for Facebook authentication.
@@ -56,6 +53,22 @@ defmodule Ueberauth.Strategy.Facebook do
       fetch_user(conn, client)
     end
   end
+  def handle_callback!(token) when is_binary(token) do
+    {_module, config} = Application.get_env(:ueberauth, Ueberauth)[:providers][:facebook]
+    token = OAuth2.AccessToken.new(token)
+    client = Ueberauth.Strategy.Facebook.OAuth.client([token: token])
+
+    case OAuth2.Client.get(client, "/me?fields=#{config[:profile_fields]}") do
+      {:ok, %OAuth2.Response{status_code: status_code, body: user}} when status_code in 200..299 ->
+        {:ok, auth(user, token)}
+      {:ok, %OAuth2.Response{status_code: 401, body: body}} ->
+        {:error, body["error"]["message"]}
+      {:error, %OAuth2.Error{reason: reason}} ->
+        {:error, reason}
+      _other ->
+        {:error, :internal_server_error}
+    end
+  end
 
   @doc false
   def handle_callback!(conn) do
@@ -72,7 +85,8 @@ defmodule Ueberauth.Strategy.Facebook do
   @doc """
   Fetches the uid field from the response.
   """
-  def uid(conn) do
+  def uid(%{"id" => id} = _user), do: id
+  def uid(%Plug.Conn{} = conn) do
     uid_field =
       conn
       |> option(:uid_field)
@@ -84,8 +98,9 @@ defmodule Ueberauth.Strategy.Facebook do
   @doc """
   Includes the credentials from the facebook response.
   """
-  def credentials(conn) do
-    token = conn.private.facebook_token
+  def credentials(%Plug.Conn{} = conn),
+    do: credentials(conn.private.facebook_token)
+  def credentials(token) do
     scopes = token.other_params["scope"] || ""
     scopes = String.split(scopes, ",")
 
@@ -101,9 +116,9 @@ defmodule Ueberauth.Strategy.Facebook do
   Fetches the fields to populate the info section of the
   `Ueberauth.Auth` struct.
   """
-  def info(conn) do
-    user = conn.private.facebook_user
-
+  def info(%Plug.Conn{} = conn),
+    do: info(conn.private.facebook_user)
+  def info(user) do
     %Info{
       description: user["bio"],
       email: user["email"],
@@ -122,11 +137,13 @@ defmodule Ueberauth.Strategy.Facebook do
   Stores the raw information (including the token) obtained from
   the facebook callback.
   """
-  def extra(conn) do
+  def extra(%Plug.Conn{} = conn),
+    do: extra(conn.private.facebook_user, conn.private.facebook_token)
+  def extra(user, token) do
     %Extra{
       raw_info: %{
-        token: conn.private.facebook_token,
-        user: conn.private.facebook_user
+        token: token,
+        user: user
       }
     }
   end
