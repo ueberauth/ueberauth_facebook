@@ -57,6 +57,20 @@ defmodule Ueberauth.Strategy.Facebook do
     end
   end
 
+  @doc """
+  Handles the callback from app with access_token.
+  """
+  def handle_callback!(%Plug.Conn{params: %{"access_token" => access_token}} = conn) do
+    client = Ueberauth.Strategy.Facebook.OAuth.client
+    token = OAuth2.AccessToken.new(access_token)
+
+    if check_access_token(conn, client, token) do
+      fetch_user(conn, %{client | token: token})
+    else
+      set_errors!(conn, [error("token", "Token verification failed")])
+    end
+  end
+
   @doc false
   def handle_callback!(conn) do
     set_errors!(conn, [error("missing_code", "No code received")])
@@ -132,7 +146,7 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp fetch_image(uid) do
-    "http://graph.facebook.com/#{uid}/picture?type=square"
+    "http://graph.facebook.com/#{uid}/picture?type=large"
   end
 
   defp fetch_user(conn, client) do
@@ -199,6 +213,25 @@ defmodule Ueberauth.Strategy.Facebook do
         name,
         option(params[name], conn, config_key)
       )
+    end
+  end
+
+  def check_access_token(conn, client, token) do
+    app_id = client.client_id
+    app_secret = client.client_secret
+    query = URI.encode_query(%{
+      "input_token" => token.access_token,
+      "access_token" => "#{app_id}|#{app_secret}"
+    })
+    path = "/debug_token?#{query}"
+
+    case OAuth2.Client.get(client, path) do
+      {:ok, %OAuth2.Response{
+        status_code: 200,
+        body: %{"data" => %{"is_valid" => true, "app_id" => ^app_id}}
+      }} -> true
+      _ -> false
+
     end
   end
 end
