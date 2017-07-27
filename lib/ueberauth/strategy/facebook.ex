@@ -133,7 +133,7 @@ defmodule Ueberauth.Strategy.Facebook do
     }
   end
 
-  defp get_image(%{ "picture" => %{ "data" => %{"url" => url}}}, _), do: url
+  defp get_image(%{ "picture" => %{ "data" => %{"url" => url}}}), do: url
   defp get_image(user, image_type), do: fetch_image(user["id"],image_type)
 
   defp fetch_image(uid, nil), do: fetch_image(uid, "square")
