@@ -129,7 +129,7 @@ Or you can specify it in query of params.
 ```elixir
 config :ueberauth, Ueberauth,
   providers: [
-    facebook: {Ueberauth.Strategy.Facebook, [profile_fields: "picture.type(larger)"]}
+    facebook: {Ueberauth.Strategy.Facebook, [profile_fields: "picture.type(large)"]}
   ]
 ```
 
