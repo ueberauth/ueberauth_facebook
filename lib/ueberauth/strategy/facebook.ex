@@ -144,7 +144,7 @@ defmodule Ueberauth.Strategy.Facebook do
 
   defp fetch_user(conn, client) do
     conn = put_private(conn, :facebook_token, client.token)
-    query = user_query(conn)
+    query = user_query(conn, client.token)
     path = "/me?#{query}"
     case OAuth2.Client.get(client, path) do
       {:ok, %OAuth2.Response{status_code: 401, body: _body}} ->
@@ -157,7 +157,7 @@ defmodule Ueberauth.Strategy.Facebook do
     end
   end
 
-  defp user_query(conn) do
+  defp user_query(conn, token) do
     %{"appsecret_proof" => appsecret_proof(token)}
         |> Map.merge(query_params(conn, :locale))
         |> Map.merge(query_params(conn, :profile))
@@ -175,11 +175,11 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp option(conn, key) do
-    default = Dict.get(default_options, key)
+    default = Keyword.get(default_options(), key)
 
     conn
     |> options
-    |> Dict.get(key, default)
+    |> Keyword.get(key, default)
   end
   defp option(nil, conn, key), do: option(conn, key)
   defp option(value, _conn, _key), do: value
@@ -195,4 +195,17 @@ defmodule Ueberauth.Strategy.Facebook do
       )
     end
   end
+
+  defp appsecret_proof(token) do
+      config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+       client_secret = Keyword.get(config, :client_secret)
+
+       token.access_token
+       |> hmac(:sha256, client_secret)
+       |> Base.encode16(case: :lower)
+     end
+
+     defp hmac(data, type, key) do
+       :crypto.hmac(type, key, data)
+     end
 end
