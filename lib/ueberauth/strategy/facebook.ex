@@ -103,15 +103,17 @@ defmodule Ueberauth.Strategy.Facebook do
   """
   def info(conn) do
     user = conn.private.facebook_user
+    image_type = option(conn, :image_type)
 
     %Info{
       description: user["bio"],
       email: user["email"],
       first_name: user["first_name"],
-      image: fetch_image(user["id"]),
+      image: get_image(user, image_type),
       last_name: user["last_name"],
       name: user["name"],
       urls: %{
+        id: user["id"],
         facebook: user["link"],
         website: user["website"]
       }
@@ -131,8 +133,13 @@ defmodule Ueberauth.Strategy.Facebook do
     }
   end
 
-  defp fetch_image(uid) do
-    "http://graph.facebook.com/#{uid}/picture?type=square"
+  defp get_image(%{ "picture" => %{ "data" => %{"url" => url}}}), do: url
+  defp get_image(user, image_type), do: fetch_image(user["id"],image_type)
+
+  defp fetch_image(uid, nil), do: fetch_image(uid, "square")
+
+  defp fetch_image(uid, type) do
+    "http://graph.facebook.com/#{uid}/picture?type=#{type}"
   end
 
   defp fetch_user(conn, client) do
@@ -152,22 +159,9 @@ defmodule Ueberauth.Strategy.Facebook do
 
   defp user_query(conn, token) do
     %{"appsecret_proof" => appsecret_proof(token)}
-    |> Map.merge(query_params(conn, :locale))
-    |> Map.merge(query_params(conn, :profile))
-    |> URI.encode_query
-  end
-
-  defp appsecret_proof(token) do
-    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
-    client_secret = Keyword.get(config, :client_secret)
-
-    token.access_token
-    |> hmac(:sha256, client_secret)
-    |> Base.encode16(case: :lower)
-  end
-
-  defp hmac(data, type, key) do
-    :crypto.hmac(type, key, data)
+        |> Map.merge(query_params(conn, :locale))
+        |> Map.merge(query_params(conn, :profile))
+        |> URI.encode_query
   end
 
   defp query_params(conn, :profile) do
@@ -201,4 +195,17 @@ defmodule Ueberauth.Strategy.Facebook do
       )
     end
   end
+
+  defp appsecret_proof(token) do
+      config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+       client_secret = Keyword.get(config, :client_secret)
+
+       token.access_token
+       |> hmac(:sha256, client_secret)
+       |> Base.encode16(case: :lower)
+     end
+
+     defp hmac(data, type, key) do
+       :crypto.hmac(type, key, data)
+     end
 end

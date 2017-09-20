@@ -115,10 +115,29 @@ config :ueberauth, Ueberauth,
   ]
 ```
 
+You can also pass wchich image type size you want.
+
+```elixir
+config :ueberauth, Ueberauth,
+  providers: [
+    facebook: {Ueberauth.Strategy.Facebook, [image_type: "large"]}
+  ]
+```
+
+Or you can specify it in query of params.
+
+```elixir
+config :ueberauth, Ueberauth,
+  providers: [
+    facebook: {Ueberauth.Strategy.Facebook, [profile_fields: "picture.type(large)"]}
+  ]
+```
+
+If picture  was fetched with profile fields, the image_type will be ignored.
+
 See [Graph API Reference > User](https://developers.facebook.com/docs/graph-api/reference/user) for full list of fields.
 
 
 ## License
 
 Please see [LICENSE](https://github.com/ueberauth/ueberauth_facebook/blob/master/LICENSE) for licensing details.
-
