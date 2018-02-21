@@ -3,9 +3,6 @@ defmodule Ueberauth.Strategy.Facebook do
   Facebook Strategy for Überauth.
   """
 
-
-
-
   use Ueberauth.Strategy, default_scope: "email,public_profile",
                           profile_fields: "id,email,gender,link,locale,name,timezone,updated_time,verified",
                           uid_field: :id,
@@ -15,8 +12,7 @@ defmodule Ueberauth.Strategy.Facebook do
                             :locale,
                             :state,
                             :display
-                          ],
-                          image_scheme: "http"
+                          ]
 
 
   alias Ueberauth.Auth.Info
@@ -107,13 +103,12 @@ defmodule Ueberauth.Strategy.Facebook do
   """
   def info(conn) do
     user = conn.private.facebook_user
-    scheme = option(conn, :image_scheme)
 
     %Info{
       description: user["bio"],
       email: user["email"],
       first_name: user["first_name"],
-      image: fetch_image(scheme,user["id"]),
+      image: fetch_image(user["id"]),
       last_name: user["last_name"],
       name: user["name"],
       urls: %{
@@ -136,8 +131,8 @@ defmodule Ueberauth.Strategy.Facebook do
     }
   end
 
-  defp fetch_image(scheme,uid) do
-    "#{scheme}://graph.facebook.com/#{uid}/picture?type=square"
+  defp fetch_image(uid) do
+    "http://graph.facebook.com/#{uid}/picture?type=square"
   end
 
   defp fetch_user(conn, client) do
