@@ -7,11 +7,10 @@
   "hackney": {:hex, :hackney, "1.8.6", "21a725db3569b3fb11a6af17d5c5f654052ce9624219f1317e8639183de4a423", [:rebar3], [{:certifi, "1.2.1", [hex: :certifi, repo: "hexpm", optional: false]}, {:idna, "5.0.2", [hex: :idna, repo: "hexpm", optional: false]}, {:metrics, "1.0.1", [hex: :metrics, repo: "hexpm", optional: false]}, {:mimerl, "1.0.2", [hex: :mimerl, repo: "hexpm", optional: false]}, {:ssl_verify_fun, "1.1.1", [hex: :ssl_verify_fun, repo: "hexpm", optional: false]}], "hexpm"},
   "idna": {:hex, :idna, "5.0.2", "ac203208ada855d95dc591a764b6e87259cb0e2a364218f215ad662daa8cd6b4", [:rebar3], [{:unicode_util_compat, "0.2.0", [hex: :unicode_util_compat, repo: "hexpm", optional: false]}], "hexpm"},
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm"},
-  "mime": {:hex, :mime, "1.1.0", "01c1d6f4083d8aa5c7b8c246ade95139620ef8effb009edde934e0ec3b28090a", [:mix], [], "hexpm"},
+  "mime": {:hex, :mime, "1.2.0", "78adaa84832b3680de06f88f0997e3ead3b451a440d183d688085be2d709b534", [:mix], [], "hexpm"},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], [], "hexpm"},
   "oauth2": {:hex, :oauth2, "0.9.1", "cac86d87f35ec835bfe4c791263bdb88c0d8bf1617d64f555ede4e9d913e35ef", [:mix], [{:hackney, "~> 1.7", [hex: :hackney, repo: "hexpm", optional: false]}], "hexpm"},
-  "plug": {:hex, :plug, "1.3.5", "7503bfcd7091df2a9761ef8cecea666d1f2cc454cbbaf0afa0b6e259203b7031", [:mix], [{:cowboy, "~> 1.0.1 or ~> 1.1", [hex: :cowboy, repo: "hexpm", optional: true]}, {:mime, "~> 1.0", [hex: :mime, repo: "hexpm", optional: false]}], "hexpm"},
+  "plug": {:hex, :plug, "1.5.0", "224b25b4039bedc1eac149fb52ed456770b9678bbf0349cdd810460e1e09195b", [:mix], [{:cowboy, "~> 1.0.1 or ~> 1.1 or ~> 2.1", [hex: :cowboy, repo: "hexpm", optional: true]}, {:mime, "~> 1.0", [hex: :mime, repo: "hexpm", optional: false]}], "hexpm"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], [], "hexpm"},
-  "ueberauth": {:hex, :ueberauth, "0.4.0", "bc72d5e5a7bdcbfcf28a756e34630816edabc926303bdce7e171f7ac7ffa4f91", [:mix], [{:plug, "~> 1.2", [hex: :plug, repo: "hexpm", optional: false]}], "hexpm"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.2.0", "dbbccf6781821b1c0701845eaf966c9b6d83d7c3bfc65ca2b78b88b8678bfa35", [:rebar3], [], "hexpm"},
 }

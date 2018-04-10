@@ -25,12 +25,25 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   These options are only useful for usage outside the normal callback phase
   of Ueberauth.
   """
-  def client(opts \\ []) do
+  def client(opts \\ [], %Plug.Conn{} = conn) do
     config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+    client_id = case Keyword.get(config, :client_id) do
+      module when is_atom(module) ->
+        apply(module, :get_client_id, [conn])
+      other ->
+        other
+    end
+    client_secret = case Keyword.get(config, :client_secret) do
+      module when is_atom(module) ->
+        apply(module, :get_client_secret, [conn])
+      other ->
+        other
+    end
 
     opts =
       @defaults
       |> Keyword.merge(config)
+      |> Keyword.merge([client_id: client_id, client_secret: client_secret])
       |> Keyword.merge(opts)
 
     OAuth2.Client.new(opts)
@@ -40,15 +53,15 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   Provides the authorize url for the request phase of Ueberauth.
   No need to call this usually.
   """
-  def authorize_url!(params \\ [], opts \\ []) do
+  def authorize_url!(params \\ [], [{:conn, %Plug.Conn{} = conn} | opts]) do
     opts
-    |> client
+    |> client(conn)
     |> OAuth2.Client.authorize_url!(params)
   end
 
-  def get_token!(params \\ [], opts \\ []) do
+  def get_token!(params \\ [], [{:conn, %Plug.Conn{} = conn} | opts]) do
     opts
-    |> client
+    |> client(conn)
     |> OAuth2.Client.get_token!(params)
   end
 
