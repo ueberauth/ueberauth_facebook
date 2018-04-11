@@ -27,6 +27,7 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   """
   def client(opts \\ []) do
     config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+    config = compute_config(config, opts)
 
     opts =
       @defaults
@@ -34,6 +35,25 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
       |> Keyword.merge(opts)
 
     OAuth2.Client.new(opts)
+  end
+
+  defp compute_config(config, opts) do
+    case Keyword.get(opts, :conn) do
+      %Plug.Conn{} = conn ->
+        with module when is_atom(module) <- Keyword.get(config, :config_from),
+             true <- function_exported?(module, :get_client_id, 1),
+             true <- function_exported?(module, :get_client_secret, 1)
+        do
+          config |> Keyword.merge([
+            client_id: apply(module, :get_client_id, [conn]),
+            client_secret: apply(module, :get_client_secret, [conn])
+          ])
+        else
+          _ -> config
+        end
+      _ ->
+        config
+    end
   end
 
   @doc """

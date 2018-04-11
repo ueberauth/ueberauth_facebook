@@ -41,11 +41,32 @@
 
 1.  Update your provider configuration:
 
-    ```elixir
-    config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-      client_id: System.get_env("FACEBOOK_CLIENT_ID"),
-      client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
-    ```
+Using a static configuration:
+
+  ```elixir
+  config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+    client_id: System.get_env("FACEBOOK_CLIENT_ID"),
+    client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
+  ```
+
+Using a computed configuration:
+
+  ```elixir
+  defmodule MyApp.ConfigFrom do
+    def get_client_id(%Plug.Conn{} = conn) do
+      ...
+    end
+
+    def get_client_secret(%Plug.Conn{} = conn) do
+      ...
+    end
+  end
+  ```
+
+  ```elixir
+  config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+    config_from: MyApp.ConfigFrom
+  ```
 
 1.  Include the Überauth plug in your controller:
 
