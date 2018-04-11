@@ -35,7 +35,7 @@ defmodule Ueberauth.Strategy.Facebook do
       |> Enum.filter(fn {k, _v} -> Enum.member?(allowed_params, k) end)
       |> Enum.map(fn {k, v} -> {String.to_existing_atom(k), v} end)
       |> Keyword.put(:redirect_uri, callback_url(conn))
-      |> Ueberauth.Strategy.Facebook.OAuth.authorize_url!
+      |> Ueberauth.Strategy.Facebook.OAuth.authorize_url!(conn: conn)
 
     redirect!(conn, authorize_url)
   end
@@ -44,7 +44,7 @@ defmodule Ueberauth.Strategy.Facebook do
   Handles the callback from Facebook.
   """
   def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
-    opts = [redirect_uri: callback_url(conn)]
+    opts = [redirect_uri: callback_url(conn), conn: conn]
     client = Ueberauth.Strategy.Facebook.OAuth.get_token!([code: code], opts)
     token = client.token
 
@@ -151,19 +151,30 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp user_query(conn, token) do
-    %{"appsecret_proof" => appsecret_proof(token)}
+    %{"appsecret_proof" => appsecret_proof(token, conn)}
     |> Map.merge(query_params(conn, :locale))
     |> Map.merge(query_params(conn, :profile))
     |> URI.encode_query
   end
 
-  defp appsecret_proof(token) do
+  defp appsecret_proof(token, conn) do
     config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+             |> compute_config(conn)
     client_secret = Keyword.get(config, :client_secret)
 
     token.access_token
     |> hmac(:sha256, client_secret)
     |> Base.encode16(case: :lower)
+  end
+
+  defp compute_config(config, conn) do
+    with module when is_atom(module) <- Keyword.get(config, :client_secret),
+        true <- function_exported?(module, :get_client_secret, 1)
+    do
+      config |> Keyword.put(:client_secret, apply(module, :get_client_secret, [conn]))
+    else
+      _ -> config
+    end
   end
 
   defp hmac(data, type, key) do
