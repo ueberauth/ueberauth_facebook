@@ -18,6 +18,7 @@ defmodule Ueberauth.Strategy.Facebook do
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
+  require Logger
 
   @doc """
   Handles initial request for Facebook authentication.
@@ -54,6 +55,27 @@ defmodule Ueberauth.Strategy.Facebook do
       set_errors!(conn, [error(err, desc)])
     else
       fetch_user(conn, client)
+    end
+  end
+
+  @doc """
+  Handles the Facebook callback from mobile.
+  """
+  def handle_mobile_callback(conn, %{token: token}) when is_binary(token) do
+    token = OAuth2.AccessToken.new(token)
+    client = Ueberauth.Strategy.Facebook.OAuth.client([token: token])
+    query = user_query(conn, client.token)
+
+    path = "/me?#{query}"
+    case OAuth2.Client.get(client, path) do
+      {:ok, %OAuth2.Response{status_code: status_code, body: user}} when status_code in 200..299 ->
+        {:ok, auth(user, token)}
+      {:ok, %OAuth2.Response{status_code: 401, body: body}} ->
+        {:error, body["error"]["message"]}
+      {:error, %OAuth2.Error{reason: reason}} ->
+        {:error, reason}
+      _other ->
+        {:error, :internal_server_error}
     end
   end
 
@@ -103,7 +125,6 @@ defmodule Ueberauth.Strategy.Facebook do
   """
   def info(conn) do
     user = conn.private.facebook_user
-
     %Info{
       description: user["bio"],
       email: user["email"],
@@ -139,6 +160,7 @@ defmodule Ueberauth.Strategy.Facebook do
     conn = put_private(conn, :facebook_token, client.token)
     query = user_query(conn, client.token)
     path = "/me?#{query}"
+
     case OAuth2.Client.get(client, path) do
       {:ok, %OAuth2.Response{status_code: 401, body: _body}} ->
         set_errors!(conn, [error("token", "unauthorized")])
@@ -161,7 +183,6 @@ defmodule Ueberauth.Strategy.Facebook do
     config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
              |> compute_config(conn)
     client_secret = Keyword.get(config, :client_secret)
-
     token.access_token
     |> hmac(:sha256, client_secret)
     |> Base.encode16(case: :lower)
@@ -182,7 +203,10 @@ defmodule Ueberauth.Strategy.Facebook do
   end
 
   defp query_params(conn, :profile) do
-    %{"fields" => option(conn, :profile_fields)}
+    case option(conn, :profile_fields) do
+      nil -> %{}
+      profile -> %{"fields" => profile}
+    end
   end
   defp query_params(conn, :locale) do
     case option(conn, :locale) do
@@ -193,10 +217,12 @@ defmodule Ueberauth.Strategy.Facebook do
 
   defp option(conn, key) do
     default = Keyword.get(default_options(), key)
-
-    conn
-    |> options
-    |> Keyword.get(key, default)
+    case options(conn) do
+      nil ->
+        Keyword.get([], key, default)
+      opts ->
+        Keyword.get(opts, key, default)
+    end
   end
   defp option(nil, conn, key), do: option(conn, key)
   defp option(value, _conn, _key), do: value
@@ -211,5 +237,54 @@ defmodule Ueberauth.Strategy.Facebook do
         option(params[name], conn, config_key)
       )
     end
+  end
+
+  defp auth(user, %OAuth2.AccessToken{} = token) do
+    %Ueberauth.Auth{
+      provider: :facebook,
+      strategy: Ueberauth.Strategy.Facebook,
+      uid: get_uid(user),
+      info: get_info_from_user(user),
+      extra: extra(user, token),
+      credentials: get_credentials(token)
+    }
+  end
+
+  def get_uid(%{"id" => id} = _user), do: id
+
+  def get_info_from_user(user) do
+    %Info{
+      description: user["bio"],
+      email: user["email"],
+      first_name: user["first_name"],
+      image: fetch_image(user["id"]),
+      last_name: user["last_name"],
+      name: user["name"],
+      urls: %{
+        facebook: user["link"],
+        website: user["website"]
+      }
+    }
+  end
+
+  def extra(user, token) do
+    %Extra{
+      raw_info: %{
+        token: token,
+        user: user
+      }
+    }
+  end
+
+  def get_credentials(%OAuth2.AccessToken{} = token) do
+    scopes = token.other_params["scope"] || ""
+    scopes = String.split(scopes, ",")
+
+    %Credentials{
+      expires: !!token.expires_at,
+      expires_at: token.expires_at,
+      scopes: scopes,
+      token: token.access_token
+    }
   end
 end
