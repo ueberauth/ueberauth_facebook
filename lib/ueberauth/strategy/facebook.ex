@@ -18,7 +18,6 @@ defmodule Ueberauth.Strategy.Facebook do
   alias Ueberauth.Auth.Info
   alias Ueberauth.Auth.Credentials
   alias Ueberauth.Auth.Extra
-  require Logger
 
   @doc """
   Handles initial request for Facebook authentication.
@@ -219,7 +218,7 @@ defmodule Ueberauth.Strategy.Facebook do
     default = Keyword.get(default_options(), key)
     case options(conn) do
       nil ->
-        Keyword.get([], key, default)
+        default
       opts ->
         Keyword.get(opts, key, default)
     end
@@ -276,18 +275,13 @@ defmodule Ueberauth.Strategy.Facebook do
     }
   end
 
-  def get_credentials(%OAuth2.AccessToken{} = token) do
-    scopes = token.other_params["scope"] || ""
-      |> String.split(",")
-
-    Logger.warn("**********************!!token.expires_at********************** #{!!token.expires_at}")
-    Logger.warn("**********************!token.expires_at********************** #{!token.expires_at}")
-    Logger.warn("**********************token.expires_at********************** #{token.expires_at}")
-
+  def get_credentials(%OAuth2.AccessToken{other_params: other_params} = token) do
     %Credentials{
       expires: !!token.expires_at,
       expires_at: token.expires_at,
-      scopes: scopes,
+      scopes: other_params
+              |> Map.get("scope", "")
+              |> String.split(","),
       token: token.access_token
     }
   end
