@@ -278,7 +278,11 @@ defmodule Ueberauth.Strategy.Facebook do
 
   def get_credentials(%OAuth2.AccessToken{} = token) do
     scopes = token.other_params["scope"] || ""
-    scopes = String.split(scopes, ",")
+      |> String.split(",")
+
+    Logger.warn("**********************!!token.expires_at********************** #{!!token.expires_at}")
+    Logger.warn("**********************!token.expires_at********************** #{!token.expires_at}")
+    Logger.warn("**********************token.expires_at********************** #{token.expires_at}")
 
     %Credentials{
       expires: !!token.expires_at,
