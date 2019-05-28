@@ -40,10 +40,10 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   defp compute_config(config, opts) do
     case Keyword.get(opts, :conn) do
       %Plug.Conn{} = conn ->
-        with module1 when is_atom(module1) <- Keyword.get(config, :client_id),
+        with module1 <- Keyword.get(config, :client_id) |> ensure_atom(),
              true <- function_exported?(module1, :get_client_id, 1),
              config1 <- config |> Keyword.put(:client_id, apply(module1, :get_client_id, [conn])),
-             module2 when is_atom(module2) <- Keyword.get(config, :client_secret),
+             module2 <- Keyword.get(config, :client_secret) |> ensure_atom(),
              true <- function_exported?(module2, :get_client_secret, 1)
         do
           config1 |> Keyword.put(:client_secret, apply(module2, :get_client_secret, [conn]))
@@ -54,6 +54,9 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
         config
     end
   end
+
+  defp ensure_atom(value) when is_atom(value), do: value
+  defp ensure_atom(value) when is_binary(value), do: String.to_atom(value)
 
   @doc """
   Provides the authorize url for the request phase of Ueberauth.
