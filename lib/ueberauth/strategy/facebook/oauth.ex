@@ -10,6 +10,8 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   """
   use OAuth2.Strategy
 
+  require Logger
+
   @defaults [
     strategy: __MODULE__,
     site: "https://graph.facebook.com",
@@ -40,13 +42,12 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   defp compute_config(config, opts) do
     case Keyword.get(opts, :conn) do
       %Plug.Conn{} = conn ->
-        with module1 <- Keyword.get(config, :client_id) |> ensure_atom(),
-             true <- function_exported?(module1, :get_client_id, 1),
-             config1 <- config |> Keyword.put(:client_id, apply(module1, :get_client_id, [conn])),
-             module2 <- Keyword.get(config, :client_secret) |> ensure_atom(),
-             true <- function_exported?(module2, :get_client_secret, 1)
+        with {:ok, client_id} <- Keyword.get(config, :client_id) |> ensure_exists(:get_client_id, 1, [conn]),
+             config1 <- config |> Keyword.put(:client_id, client_id),
+             {:ok, client_secret}  <- Keyword.get(config, :client_secret) |> ensure_exists(:get_client_secret, 1, [conn]),
+             config2 <- config1 |> Keyword.put(:client_secret, client_secret)
         do
-          config1 |> Keyword.put(:client_secret, apply(module2, :get_client_secret, [conn]))
+          config2
         else
           _ -> config
         end
@@ -55,8 +56,18 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
     end
   end
 
-  defp ensure_atom(value) when is_atom(value), do: value
-  defp ensure_atom(value) when is_binary(value), do: String.to_atom(value)
+  defp ensure_exists(module, fun, arity, args) when is_atom(module) or is_bitstring(module) do
+    atom_module = case module do
+      bitstring_module when is_bitstring(bitstring_module) -> String.to_atom(bitstring_module)
+      atom_module when is_atom(atom_module) -> atom_module
+    end
+
+    {:module, _} = Code.ensure_loaded(atom_module)
+    case function_exported?(atom_module, fun, arity) do
+      true -> {:ok, apply(atom_module, fun, args)}
+      _ -> :error
+    end
+  end
 
   @doc """
   Provides the authorize url for the request phase of Ueberauth.

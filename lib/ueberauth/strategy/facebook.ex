@@ -189,6 +189,7 @@ defmodule Ueberauth.Strategy.Facebook do
 
   defp compute_config(config, conn) do
     with module when is_atom(module) <- Keyword.get(config, :client_secret),
+        {:module, _} <- Code.ensure_loaded(module),
         true <- function_exported?(module, :get_client_secret, 1)
     do
       config |> Keyword.put(:client_secret, apply(module, :get_client_secret, [conn]))
