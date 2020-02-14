@@ -48,7 +48,13 @@ defmodule Ueberauth.Strategy.Facebook do
   Handles the callback from Facebook.
   """
   def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
-    opts = [redirect_uri: callback_url(conn)]
+    opts = oauth_client_options_from_conn(conn)
+
+    config =
+      :ueberauth
+      |> Application.get_env(Ueberauth.Strategy.Facebook.OAuth, [])
+      |> Keyword.merge(opts)
+
     client = Ueberauth.Strategy.Facebook.OAuth.get_token!([code: code], opts)
     token = client.token
 
@@ -57,7 +63,7 @@ defmodule Ueberauth.Strategy.Facebook do
       desc = token.other_params["error_description"]
       set_errors!(conn, [error(err, desc)])
     else
-      fetch_user(conn, client)
+      fetch_user(conn, client, config)
     end
   end
 
@@ -139,9 +145,9 @@ defmodule Ueberauth.Strategy.Facebook do
     "https://graph.facebook.com/#{uid}/picture?type=square"
   end
 
-  defp fetch_user(conn, client) do
+  defp fetch_user(conn, client, config) do
     conn = put_private(conn, :facebook_token, client.token)
-    query = user_query(conn, client.token)
+    query = user_query(conn, client.token, config)
     path = "/me?#{query}"
 
     case OAuth2.Client.get(client, path) do
@@ -157,15 +163,14 @@ defmodule Ueberauth.Strategy.Facebook do
     end
   end
 
-  defp user_query(conn, token) do
-    %{"appsecret_proof" => appsecret_proof(token)}
+  defp user_query(conn, token, config) do
+    %{"appsecret_proof" => appsecret_proof(token, config)}
     |> Map.merge(query_params(conn, :locale))
     |> Map.merge(query_params(conn, :profile))
     |> URI.encode_query()
   end
 
-  defp appsecret_proof(token) do
-    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+  defp appsecret_proof(token, config) do
     client_secret = Keyword.get(config, :client_secret)
 
     token.access_token
