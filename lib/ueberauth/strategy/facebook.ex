@@ -55,15 +55,20 @@ defmodule Ueberauth.Strategy.Facebook do
       |> Application.get_env(Ueberauth.Strategy.Facebook.OAuth, [])
       |> Keyword.merge(opts)
 
-    client = Ueberauth.Strategy.Facebook.OAuth.get_token!([code: code], opts)
-    token = client.token
+    try do
+      client = Ueberauth.Strategy.Facebook.OAuth.get_token!([code: code], opts)
+      token = client.token
 
-    if token.access_token == nil do
-      err = token.other_params["error"]
-      desc = token.other_params["error_description"]
-      set_errors!(conn, [error(err, desc)])
-    else
-      fetch_user(conn, client, config)
+      if token.access_token == nil do
+        err = token.other_params["error"]
+        desc = token.other_params["error_description"]
+        set_errors!(conn, [error(err, desc)])
+      else
+        fetch_user(conn, client, config)
+      end
+    rescue
+      OAuth2.Error ->
+        set_errors!(conn, [error("invalid_code", "The code has been used or has expired")])
     end
   end
 
