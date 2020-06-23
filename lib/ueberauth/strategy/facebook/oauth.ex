@@ -28,15 +28,21 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   of Ueberauth.
   """
   def client(opts \\ []) do
+    Logger.warn("****Ueberauth *Òauth Facebook*******************")
     config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
              |> compute_config(opts)
 
+    Logger.warn("****Ueberauth *Òauth Facebook*************config****** #{inspect(config, pretty: true)}")
     opts =
       @defaults
       |> Keyword.merge(config)
       |> Keyword.merge(opts)
 
+    json_library = Ueberauth.json_library()
+
+    Logger.warn("****Ueberauth *Òauth Facebook*************opts****** #{inspect(opts, pretty: true)}")
     OAuth2.Client.new(opts)
+    |> OAuth2.Client.put_serializer("application/json", json_library)
   end
 
   defp compute_config(config, opts) do
