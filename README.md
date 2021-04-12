@@ -1,4 +1,5 @@
 # Überauth Facebook
+
 [![Build Status][travis-img]][travis] [![Hex Version][hex-img]][hex] [![License][license-img]][license]
 
 [travis-img]: https://travis-ci.org/ueberauth/ueberauth_facebook.svg?branch=master
@@ -16,57 +17,57 @@
 
 1. Add `:ueberauth_facebook` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:ueberauth_facebook, "~> 0.8"}]
-    end
-    ```
+   ```elixir
+   def deps do
+     [{:ueberauth_facebook, "~> 0.8"}]
+   end
+   ```
 
 1. Add the strategy to your applications:
 
-    ```elixir
-    def application do
-      [applications: [:ueberauth_facebook]]
-    end
-    ```
+   ```elixir
+   def application do
+     [applications: [:ueberauth_facebook]]
+   end
+   ```
 
 1. Add Facebook to your Überauth configuration:
 
-    ```elixir
-    config :ueberauth, Ueberauth,
-      providers: [
-        facebook: {Ueberauth.Strategy.Facebook, []}
-      ]
-    ```
+   ```elixir
+   config :ueberauth, Ueberauth,
+     providers: [
+       facebook: {Ueberauth.Strategy.Facebook, []}
+     ]
+   ```
 
-1.  Update your provider configuration:
+1. Update your provider configuration:
 
-    ```elixir
-    config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-      client_id: System.get_env("FACEBOOK_CLIENT_ID"),
-      client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
-    ```
+   ```elixir
+   config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+     client_id: System.get_env("FACEBOOK_CLIENT_ID"),
+     client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
+   ```
 
-1.  Include the Überauth plug in your controller:
+1. Include the Überauth plug in your controller:
 
-    ```elixir
-    defmodule MyApp.AuthController do
-      use MyApp.Web, :controller
-      plug Ueberauth
-      ...
-    end
-    ```
+   ```elixir
+   defmodule MyApp.AuthController do
+     use MyApp.Web, :controller
+     plug Ueberauth
+     ...
+   end
+   ```
 
-1.  Create the request and callback routes if you haven't already:
+1. Create the request and callback routes if you haven't already:
 
-    ```elixir
-    scope "/auth", MyApp do
-      pipe_through :browser
+   ```elixir
+   scope "/auth", MyApp do
+     pipe_through :browser
 
-      get "/:provider", AuthController, :request
-      get "/:provider/callback", AuthController, :callback
-    end
-    ```
+     get "/:provider", AuthController, :request
+     get "/:provider/callback", AuthController, :callback
+   end
+   ```
 
 1. Your controller needs to implement callbacks to deal with `Ueberauth.Auth` and `Ueberauth.Failure` responses.
 
@@ -78,7 +79,7 @@ Depending on the configured URL you can initialize the request through:
 
     /auth/facebook
 
-Or with options:
+Or with options (`state`, `auth_type`, `scope`, `locale`, `display`):
 
     /auth/facebook?scope=email,public_profile
 
@@ -117,8 +118,12 @@ config :ueberauth, Ueberauth,
 
 See [Graph API Reference > User](https://developers.facebook.com/docs/graph-api/reference/user) for full list of fields.
 
+### Passing dynamic state
+
+A [state](https://developers.facebook.com/docs/facebook-login/security/#stateparam) parameter can be [passed with a call](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow#login) and is returned in the redirect URI as a URL parameter.
+
+    /auth/facebook?scope=email,public_profile&state={"id":1,"field":"value"}
 
 ## License
 
 Please see [LICENSE](https://github.com/ueberauth/ueberauth_facebook/blob/master/LICENSE) for licensing details.
-
