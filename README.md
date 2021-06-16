@@ -1,13 +1,11 @@
 # Überauth Facebook
 
-[![Build Status][travis-img]][travis] [![Hex Version][hex-img]][hex] [![License][license-img]][license]
-
-[travis-img]: https://travis-ci.org/ueberauth/ueberauth_facebook.svg?branch=master
-[travis]: https://travis-ci.org/ueberauth/ueberauth_facebook
-[hex-img]: https://img.shields.io/hexpm/v/ueberauth_facebook.svg
-[hex]: https://hex.pm/packages/ueberauth_facebook
-[license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
-[license]: http://opensource.org/licenses/MIT
+[![Build Status](https://travis-ci.org/ueberauth/ueberauth_facebook.svg?branch=master)](https://travis-ci.org/ueberauth/ueberauth_facebook)
+[![Module Version](https://img.shields.io/hexpm/v/ueberauth_facebook.svg)](https://hex.pm/packages/ueberauth_facebook)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/ueberauth_facebook/)
+[![Total Download](https://img.shields.io/hexpm/dt/ueberauth_facebook.svg)](https://hex.pm/packages/ueberauth_facebook)
+[![License](https://img.shields.io/hexpm/l/ueberauth_facebook.svg)](https://github.com/ueberauth/ueberauth_facebook/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/ueberauth/ueberauth_facebook.svg)](https://github.com/ueberauth/ueberauth_facebook/commits/master)
 
 > Facebook OAuth2 strategy for Überauth.
 
@@ -17,19 +15,23 @@
 
 1. Add `:ueberauth_facebook` to your list of dependencies in `mix.exs`:
 
-   ```elixir
-   def deps do
-     [{:ueberauth_facebook, "~> 0.8"}]
-   end
-   ```
+    ```elixir
+    def deps do
+      [
+        {:ueberauth_facebook, "~> 0.8"}
+      ]
+    end
+    ```
 
 1. Add the strategy to your applications:
 
-   ```elixir
-   def application do
-     [applications: [:ueberauth_facebook]]
-   end
-   ```
+    ```elixir
+    def application do
+      [
+        applications: [:ueberauth_facebook]
+      ]
+    end
+    ```
 
 1. Add Facebook to your Überauth configuration:
 
@@ -124,6 +126,8 @@ A [state](https://developers.facebook.com/docs/facebook-login/security/#statepar
 
     /auth/facebook?scope=email,public_profile&state={"id":1,"field":"value"}
 
-## License
+## Copyright and License
 
-Please see [LICENSE](https://github.com/ueberauth/ueberauth_facebook/blob/master/LICENSE) for licensing details.
+Copyright (c) 2015 Sean Callan
+
+Released under the MIT License, which can be found in the repository in [LICENSE](./LICENSE).
