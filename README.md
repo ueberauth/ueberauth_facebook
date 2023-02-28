@@ -44,10 +44,22 @@
 
 1. Update your provider configuration:
 
+   Use that if you want to read client ID/secret from the environment
+   variables in the compile time:
+
    ```elixir
    config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
      client_id: System.get_env("FACEBOOK_CLIENT_ID"),
      client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
+   ```
+
+   Use that if you want to read client ID/secret from the environment
+   variables in the run time:
+
+   ```elixir
+   config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+     client_id: {System, :get_env, ["FACEBOOK_CLIENT_ID"]},
+     client_secret: {System, :get_env, ["FACEBOOK_CLIENT_SECRET"]}
    ```
 
 1. Include the Überauth plug in your controller:
