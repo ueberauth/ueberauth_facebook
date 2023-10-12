@@ -1,12 +1,11 @@
 # Überauth Facebook
-[![Build Status][travis-img]][travis] [![Hex Version][hex-img]][hex] [![License][license-img]][license]
 
-[travis-img]: https://travis-ci.org/ueberauth/ueberauth_facebook.png?branch=master
-[travis]: https://travis-ci.org/ueberauth/ueberauth_facebook
-[hex-img]: https://img.shields.io/hexpm/v/ueberauth_facebook.svg
-[hex]: https://hex.pm/packages/ueberauth_facebook
-[license-img]: http://img.shields.io/badge/license-MIT-brightgreen.svg
-[license]: http://opensource.org/licenses/MIT
+[![Build Status](https://travis-ci.org/ueberauth/ueberauth_facebook.svg?branch=master)](https://travis-ci.org/ueberauth/ueberauth_facebook)
+[![Module Version](https://img.shields.io/hexpm/v/ueberauth_facebook.svg)](https://hex.pm/packages/ueberauth_facebook)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/ueberauth_facebook/)
+[![Total Download](https://img.shields.io/hexpm/dt/ueberauth_facebook.svg)](https://hex.pm/packages/ueberauth_facebook)
+[![License](https://img.shields.io/hexpm/l/ueberauth_facebook.svg)](https://github.com/ueberauth/ueberauth_facebook/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/ueberauth/ueberauth_facebook.svg)](https://github.com/ueberauth/ueberauth_facebook/commits/master)
 
 > Facebook OAuth2 strategy for Überauth.
 
@@ -16,57 +15,61 @@
 
 1. Add `:ueberauth_facebook` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:ueberauth_facebook, "~> 0.6"}]
-    end
-    ```
+   ```elixir
+   def deps do
+     [
+       {:ueberauth_facebook, "~> 0.8"}
+     ]
+   end
+   ```
 
 1. Add the strategy to your applications:
 
-    ```elixir
-    def application do
-      [applications: [:ueberauth_facebook]]
-    end
-    ```
+   ```elixir
+   def application do
+     [
+       applications: [:ueberauth_facebook]
+     ]
+   end
+   ```
 
 1. Add Facebook to your Überauth configuration:
 
-    ```elixir
-    config :ueberauth, Ueberauth,
-      providers: [
-        facebook: {Ueberauth.Strategy.Facebook, []}
-      ]
-    ```
+   ```elixir
+   config :ueberauth, Ueberauth,
+     providers: [
+       facebook: {Ueberauth.Strategy.Facebook, []}
+     ]
+   ```
 
-1.  Update your provider configuration:
+1. Update your provider configuration:
 
-    ```elixir
-    config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-      client_id: System.get_env("FACEBOOK_CLIENT_ID"),
-      client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
-    ```
+   ```elixir
+   config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+     client_id: System.get_env("FACEBOOK_CLIENT_ID"),
+     client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
+   ```
 
-1.  Include the Überauth plug in your controller:
+1. Include the Überauth plug in your controller:
 
-    ```elixir
-    defmodule MyApp.AuthController do
-      use MyApp.Web, :controller
-      plug Ueberauth
-      ...
-    end
-    ```
+   ```elixir
+   defmodule MyApp.AuthController do
+     use MyApp.Web, :controller
+     plug Ueberauth
+     ...
+   end
+   ```
 
-1.  Create the request and callback routes if you haven't already:
+1. Create the request and callback routes if you haven't already:
 
-    ```elixir
-    scope "/auth", MyApp do
-      pipe_through :browser
+   ```elixir
+   scope "/auth", MyApp do
+     pipe_through :browser
 
-      get "/:provider", AuthController, :request
-      get "/:provider/callback", AuthController, :callback
-    end
-    ```
+     get "/:provider", AuthController, :request
+     get "/:provider/callback", AuthController, :callback
+   end
+   ```
 
 1. Your controller needs to implement callbacks to deal with `Ueberauth.Auth` and `Ueberauth.Failure` responses.
 
@@ -78,7 +81,7 @@ Depending on the configured URL you can initialize the request through:
 
     /auth/facebook
 
-Or with options:
+Or with options (`auth_type`, `scope`, `locale`, `display`):
 
     /auth/facebook?scope=email,public_profile
 
@@ -117,8 +120,8 @@ config :ueberauth, Ueberauth,
 
 See [Graph API Reference > User](https://developers.facebook.com/docs/graph-api/reference/user) for full list of fields.
 
+## Copyright and License
 
-## License
+Copyright (c) 2015 Sean Callan
 
-Please see [LICENSE](https://github.com/ueberauth/ueberauth_facebook/blob/master/LICENSE) for licensing details.
-
+Released under the MIT License, which can be found in the repository in [LICENSE](./LICENSE).

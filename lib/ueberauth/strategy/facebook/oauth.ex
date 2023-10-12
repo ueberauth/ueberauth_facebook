@@ -2,11 +2,12 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   @moduledoc """
   OAuth2 for Facebook.
 
-  Add `client_id` and `client_secret` to your configuration:
+  Add `:client_id` and `:client_secret` to your configuration:
 
-  config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-    client_id: System.get_env("FACEBOOK_APP_ID"),
-    client_secret: System.get_env("FACEBOOK_APP_SECRET")
+      config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+        client_id: System.get_env("FACEBOOK_APP_ID"),
+        client_secret: System.get_env("FACEBOOK_APP_SECRET")
+
   """
   use OAuth2.Strategy
 
@@ -26,14 +27,18 @@ defmodule Ueberauth.Strategy.Facebook.OAuth do
   of Ueberauth.
   """
   def client(opts \\ []) do
-    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
+    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth, [])
 
     opts =
       @defaults
       |> Keyword.merge(config)
       |> Keyword.merge(opts)
 
-    OAuth2.Client.new(opts)
+    json_library = Ueberauth.json_library()
+
+    opts
+    |> OAuth2.Client.new()
+    |> OAuth2.Client.put_serializer("application/json", json_library)
   end
 
   @doc """
